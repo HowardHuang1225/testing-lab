@@ -67,18 +67,38 @@ describe('Todo API Testing', () => {
 
   test('Given a valid ID and status, When receive a PUT /api/v1/todos/:id request, Then it should response the updated todo object', async () => {
     // arrange: mock the repo function to return an updated todo object
+    const updatedTodo: Todo = {
+      id: '1',
+      name: 'todo 1',
+      description: 'description 1',
+      status: true
+    }
+    vi.spyOn(TodoRepo, 'updateTodoById').mockImplementation(async () => updatedTodo)
 
     // act: receive a PUT /api/v1/todos/:id request
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/todos/1',
+      payload: { status: true }
+    })
 
     // assert: response should be the updated todo object
+    const result = JSON.parse(response.body)['todo']
+    expect(result).toStrictEqual(updatedTodo)
   })
 
   test('Given an invalid ID, When receive a PUT /api/v1/todos/:id request, Then it should response with status code 404', async () => {
     // arrange: mock the repo function to return null
+    vi.spyOn(TodoRepo, 'updateTodoById').mockImplementation(async () => null)
 
     // act: receive a PUT /api/v1/todos/:id request
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/todos/invalid',
+      payload: { status: true }
+    })
 
     // assert: response should with status code 404
-
+    expect(response.statusCode).toBe(404)
   })
 })
